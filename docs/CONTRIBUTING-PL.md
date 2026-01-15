@@ -3,38 +3,25 @@
 RustDesk z zadowoleniem przyjmuje wkład od każdego. Oto wytyczne, jeśli chcesz nam pomóc:
 
 ## Współtwórcy
+Wszelkie wkłady do projektu RustDesk lub jego zależności powinny być zgłaszane w formie pull requestów na GitHubie. Każdy pull request zostanie przejrzany przez jednego z głównych współtwórców projektu (osobę posiadającą uprawnienia do włączania zmian) i następnie zostanie zaakceptowany do głównej gałęzi projektu lub otrzyma informację zwrotną dotyczącą wymaganych poprawek. Zasada ta dotyczy wszystkich wkładów, w tym również tych pochodzących od głównych współtwórców.
 
-Contributions to RustDesk or its dependencies should be made in the form of GitHub
-pull requests. Each pull request will be reviewed by a core contributor
-(someone with permission to land patches) and either landed in the main tree or
-given feedback for changes that would be required. All contributions should
-follow this format, even those from core contributors.
-
-Should you wish to work on an issue, please claim it first by commenting on
-the GitHub issue that you want to work on it. This is to prevent duplicated
-efforts from contributors on the same issue.
+Jeżeli chcesz pracować nad konkretnym zgłoszeniem (issue), najpierw zarezerwuj je, dodając komentarz do odpowiedniego zgłoszenia na GitHubie. Pozwala to uniknąć dublowania pracy przez kilku współtwórców nad tym samym problemem.
 
 ## Pull Request Checklist
 
-- Branch from the master branch and, if needed, rebase to the current master
-  branch before submitting your pull request. If it doesn't merge cleanly with
-  master you may be asked to rebase your changes.
+- Utwórz branch na podstawie gałęzi master i — jeśli to konieczne — wykonaj rebase do aktualnej wersji master przed wysłaniem pull requesta. Jeżeli zmiany nie scalają się poprawnie z gałęzią master, możesz zostać poproszony o wykonanie rebasa.
 
-- Commits should be as small as possible, while ensuring that each commit is
-  correct independently (i.e., each commit should compile and pass tests).
+- Commity powinny być możliwie małe, przy jednoczesnym zachowaniu poprawności każdego z nich. Każdy commit powinien kompilować się samodzielnie i przechodzić testy.
 
-- Commits should be accompanied by a Developer Certificate of Origin
-  (http://developercertificate.org) sign-off, which indicates that you (and
-  your employer if applicable) agree to be bound by the terms of the
-  [project license](../LICENCE). In git, this is the `-s` option to `git commit`
+- Każdy commit powinien zawierać podpis Developer Certificate of Origin (DCO)
+(http://developercertificate.org), potwierdzający, że Ty (oraz Twój pracodawca, jeśli dotyczy) zgadzacie się na warunki licencji projektu.
+  [project license](../LICENCE). W Git podpis ten dodaje się za pomocą opcji `-s`  polecenia `git commit`.
 
-- If your patch is not getting reviewed or you need a specific person to review
-  it, you can @-reply a reviewer asking for a review in the pull request or a
-  comment, or you can ask for a review via [email](mailto:info@rustdesk.com).
+- Jeżeli Twoja poprawka nie jest przeglądana lub potrzebujesz, aby konkretna osoba ją sprawdziła, możesz oznaczyć recenzenta za pomocą @ w pull requeście lub komentarzu, albo poprosić o recenzję drogą mailową: [email](mailto:info@rustdesk.com).
 
-- Add tests relevant to the fixed bug or new feature.
+- Dodaj testy związane z naprawianym błędem lub nową funkcjonalnością.
 
-For specific git instructions, see [GitHub workflow 101](https://github.com/servo/servo/wiki/GitHub-workflow).
+W celu zapoznania się ze szczegółowymi instrukcjami dotyczącymi pracy z Git, zobacz [GitHub workflow 101](https://github.com/servo/servo/wiki/GitHub-workflow).
 
 ## Kodeks postępowania
 
