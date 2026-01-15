@@ -7,7 +7,7 @@ Wszelkie wkłady do projektu RustDesk lub jego zależności powinny być zgłasz
 
 Jeżeli chcesz pracować nad konkretnym zgłoszeniem (issue), najpierw zarezerwuj je, dodając komentarz do odpowiedniego zgłoszenia na GitHubie. Pozwala to uniknąć dublowania pracy przez kilku współtwórców nad tym samym problemem.
 
-## Pull Request Checklist
+## Lista kontrolna Pull Requesta
 
 - Utwórz branch na podstawie gałęzi master i — jeśli to konieczne — wykonaj rebase do aktualnej wersji master przed wysłaniem pull requesta. Jeżeli zmiany nie scalają się poprawnie z gałęzią master, możesz zostać poproszony o wykonanie rebasa.
 
