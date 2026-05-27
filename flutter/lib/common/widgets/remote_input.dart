@@ -31,7 +31,7 @@ class RawKeyFocusScope extends StatelessWidget {
     // https://github.com/flutter/flutter/issues/154053
     final useRawKeyEvents = isLinux && !isWeb;
     // FIXME: On Windows, `AltGr` will generate `Alt` and `Control` key events,
-    // while `Alt` and `Control` are seperated key events for en-US input method.
+    // while `Alt` and `Control` are separated key events for en-US input method.
     return FocusScope(
         autofocus: true,
         child: Focus(
@@ -107,6 +107,8 @@ class _RawTouchGestureDetectorRegionState
   // For mouse mode, we need to block the events when the cursor is in a blocked area.
   // So we need to cache the last tap down position.
   Offset? _lastTapDownPositionForMouseMode;
+  // Cache global position for onTap (which lacks position info).
+  Offset? _lastTapDownGlobalPosition;
 
   FFI get ffi => widget.ffi;
   FfiModel get ffiModel => widget.ffiModel;
@@ -136,6 +138,7 @@ class _RawTouchGestureDetectorRegionState
 
   onTapDown(TapDownDetails d) async {
     lastDeviceKind = d.kind;
+    _lastTapDownGlobalPosition = d.globalPosition;
     if (isNotTouchBasedDevice()) {
       return;
     }
@@ -154,11 +157,16 @@ class _RawTouchGestureDetectorRegionState
     if (isNotTouchBasedDevice()) {
       return;
     }
+    // Filter duplicate touch tap events on iOS (Magic Mouse issue).
+    if (inputModel.shouldIgnoreTouchTap(d.globalPosition)) {
+      return;
+    }
     if (handleTouch) {
       final isMoved =
           await ffi.cursorModel.move(d.localPosition.dx, d.localPosition.dy);
       if (isMoved) {
-        if (lastTapDownDetails != null) {
+        // If pan already handled 'down', don't send it again.
+        if (lastTapDownDetails != null && !_touchModePanStarted) {
           await inputModel.tapDown(MouseButtons.left);
         }
         await inputModel.tapUp(MouseButtons.left);
@@ -168,6 +176,11 @@ class _RawTouchGestureDetectorRegionState
 
   onTap() async {
     if (isNotTouchBasedDevice()) {
+      return;
+    }
+    // Filter duplicate touch tap events on iOS (Magic Mouse issue).
+    final lastPos = _lastTapDownGlobalPosition;
+    if (lastPos != null && inputModel.shouldIgnoreTouchTap(lastPos)) {
       return;
     }
     if (!handleTouch) {
@@ -424,6 +437,14 @@ class _RawTouchGestureDetectorRegionState
     }
   }
 
+  // Reset `_touchModePanStarted` if the one-finger pan gesture is cancelled
+  // or rejected by the gesture arena. Without this, the flag can remain
+  // stuck in the "started" state and cause issues such as the Magic Mouse
+  // double-click problem on iPad with magic mouse.
+  onOneFingerPanCancel() {
+    _touchModePanStarted = false;
+  }
+
   // scale + pan event
   onTwoFingerScaleStart(ScaleStartDetails d) {
     _lastTapDownDetails = null;
@@ -511,7 +532,9 @@ class _RawTouchGestureDetectorRegionState
       // Official
       TapGestureRecognizer:
           GestureRecognizerFactoryWithHandlers<TapGestureRecognizer>(
-              () => TapGestureRecognizer(), (instance) {
+              () => TapGestureRecognizer(
+                    supportedDevices: kTouchBasedDeviceKinds,
+                  ), (instance) {
         instance
           ..onTapDown = onTapDown
           ..onTapUp = onTapUp
@@ -519,14 +542,18 @@ class _RawTouchGestureDetectorRegionState
       }),
       DoubleTapGestureRecognizer:
           GestureRecognizerFactoryWithHandlers<DoubleTapGestureRecognizer>(
-              () => DoubleTapGestureRecognizer(), (instance) {
+              () => DoubleTapGestureRecognizer(
+                    supportedDevices: kTouchBasedDeviceKinds,
+                  ), (instance) {
         instance
           ..onDoubleTapDown = onDoubleTapDown
           ..onDoubleTap = onDoubleTap;
       }),
       LongPressGestureRecognizer:
           GestureRecognizerFactoryWithHandlers<LongPressGestureRecognizer>(
-              () => LongPressGestureRecognizer(), (instance) {
+              () => LongPressGestureRecognizer(
+                    supportedDevices: kTouchBasedDeviceKinds,
+                  ), (instance) {
         instance
           ..onLongPressDown = onLongPressDown
           ..onLongPressUp = onLongPressUp
@@ -536,7 +563,9 @@ class _RawTouchGestureDetectorRegionState
       // Customized
       HoldTapMoveGestureRecognizer:
           GestureRecognizerFactoryWithHandlers<HoldTapMoveGestureRecognizer>(
-              () => HoldTapMoveGestureRecognizer(),
+              () => HoldTapMoveGestureRecognizer(
+                    supportedDevices: kTouchBasedDeviceKinds,
+                  ),
               (instance) => instance
                 ..onHoldDragStart = onHoldDragStart
                 ..onHoldDragUpdate = onHoldDragUpdate
@@ -544,19 +573,24 @@ class _RawTouchGestureDetectorRegionState
                 ..onHoldDragEnd = onHoldDragEnd),
       DoubleFinerTapGestureRecognizer:
           GestureRecognizerFactoryWithHandlers<DoubleFinerTapGestureRecognizer>(
-              () => DoubleFinerTapGestureRecognizer(), (instance) {
+              () => DoubleFinerTapGestureRecognizer(
+                    supportedDevices: kTouchBasedDeviceKinds,
+                  ), (instance) {
         instance
           ..onDoubleFinerTap = onDoubleFinerTap
           ..onDoubleFinerTapDown = onDoubleFinerTapDown;
       }),
       CustomTouchGestureRecognizer:
           GestureRecognizerFactoryWithHandlers<CustomTouchGestureRecognizer>(
-              () => CustomTouchGestureRecognizer(), (instance) {
+              () => CustomTouchGestureRecognizer(
+                    supportedDevices: kTouchBasedDeviceKinds,
+                  ), (instance) {
         instance.onOneFingerPanStart =
             (DragStartDetails d) => onOneFingerPanStart(context, d);
         instance
           ..onOneFingerPanUpdate = onOneFingerPanUpdate
           ..onOneFingerPanEnd = onOneFingerPanEnd
+          ..onOneFingerPanCancel = onOneFingerPanCancel
           ..onTwoFingerScaleStart = onTwoFingerScaleStart
           ..onTwoFingerScaleUpdate = onTwoFingerScaleUpdate
           ..onTwoFingerScaleEnd = onTwoFingerScaleEnd
